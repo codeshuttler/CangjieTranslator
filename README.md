@@ -4,17 +4,17 @@
 In the rapidly advancing field of software development, the demand for practical code translation tools has surged, driven by the need for interoperability across different programming environments.
 Existing learning-based approaches often need help with low-resource programming languages that lack sufficient parallel code corpora for training. To address these limitations, we propose a novel training framework that begins with monolingual seed corpora, generating parallel datasets via back-translation and incorporating compiler feedback to optimize the translation model.
 
-As a case study, we apply our method to train a code translation model for a new-born low-resource programming language, Cangjie. We also construct a parallel test dataset for Java-to-Cangjie translation and test cases to evaluate the effectiveness of our approach. Experimental results demonstrate that compiler feedback greatly enhances syntactical correctness, semantic accuracy, and test pass rates of the translated Cangjie code. These findings highlight the potential of our method to support code translation in low-resource settings, expanding the capabilities of learning-based models for programming languages with limited data availability.
+As a case study, we apply our method to train a code translation model for a new-born low-resource programming language, **Cangjie**. We also construct a parallel test dataset for **Java-to-Cangjie** translation and test cases to evaluate the effectiveness of our approach. Experimental results demonstrate that compiler feedback greatly enhances syntactical correctness, semantic accuracy, and test pass rates of the translated Cangjie code. These findings highlight the potential of our method to support code translation in low-resource settings, expanding the capabilities of learning-based models for programming languages with limited data availability.
 
-The artifact contains three parts.
-The first part is our test dataset.
-The second part is the evaluation scripts.
-The three part is the test results of our translation model and baselines.
+The artifact contains three parts:
+* The first part is our test dataset.
+* The second part is the evaluation scripts.
+* The three part is the test results of our translation model and baselines.
 
 # Data
 We manually constructed the test dataset. Our test data is derived from TransCoder's Java code, consisting of a total of 216 test samples, which include test inputs and functions to be tested.
 We manually translated the Java code into Cangjie code, with two experienced developers involved in the translation process. Both developers have over three years of Java  development experience and three months of Cangjie language development experience. It took us two weeks to complete the construction of this dataset.
-The test dataset is under the repository `Releases` - [TransCoderTestCJ](https://github.com/codeshuttler/CangjieTranslator/tree/main/results).
+The test dataset is under the repository `Releases` - [TransCoderTestCJ](https://github.com/codeshuttler/CangjieTranslator/releases/download/artifacts/results.7z).
 
 # Setup
 ## Hardware
