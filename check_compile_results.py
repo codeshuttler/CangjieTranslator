@@ -55,9 +55,8 @@ def main():
             has_error_info = check_cj(cj_code, use_tree_sitter=True)
             has_error_info2 = check_cj(cj_code, use_tree_sitter=False)
             if has_error_info == True and has_error_info2 == False:
-                print(f"This file contains error(s): {cj_file}")
+                print(f"The tree-sitter check is different from the non-tree-sitter check for {cj_file}")
             if has_error_info:
-                # print(f"输出中包含错误信息: {cj_file}")
                 error_num += 1
                 error_paths.append(cj_file)
             else:
@@ -67,13 +66,13 @@ def main():
             output = check_cj_from_file(cj_file)
             output = remove_color_codes(output)
             if "error" in output:
-                print(f"This file contains error(s): {cj_file}")
+                print(f"The output contains error information: {cj_file}")
                 
                 errors = parse_error_messages(output)
                 for error in errors:
                     error_msg, error_file, error_row, error_col, error_details = parse_error(error)
-                    print(f"Error Position: {error_file}:{error_row}:{error_col}")
-                    print(f"Error Message: {error_msg}.")
+                    print(f"Error position: {error_file}:{error_row}:{error_col}")
+                    print(f"Error message: {error_msg}.")
                     
                 error_num += 1
                 error_paths.append(cj_file)
@@ -81,7 +80,7 @@ def main():
                 correct_num += 1
                 correct_paths.append(cj_file)
 
-    print(f"Error Number: {error_num}\nCorrect Number: {correct_num}\nTotal Number: {error_num+correct_num}")
+    print(f"Parse Error Number: {error_num}\nParse Correct Number: {correct_num}\nTotal Number: {error_num+correct_num}")
 
 
 if __name__ == "__main__":
