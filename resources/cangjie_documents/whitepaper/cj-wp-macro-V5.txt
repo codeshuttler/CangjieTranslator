@@ -1,0 +1,56 @@
+宏
+更新时间: 2024-09-06 16:33
+宏可以看作是一种“代码缩写”，也可以看做是一种扩展语言语法的方式。在编译或者程序运行过程中，看到这种代码缩写，会将其替换为实际对应的代码（即所谓的宏展开）。如果有些功能可以用统一且简单的代码来表达，那么就可以使用宏来处理。仓颉提供了在词法分析阶段做宏展开的过程宏，未来还将进一步提供更多简单易用且表达力丰富的宏定义方式，包括 late-stage 宏和模板宏等。
+
+过程宏
+仓颉的过程宏接受一个 token 序列作为输入，对其进行处理和变换后，输出另一个 token 序列。输入的 token 序列由词法分析器产生，因此必须满足仓颉的词法规则，但无需满足仓颉的语法规则。输出的 token 序列必须满足仓颉的语法语义，是合法的仓颉程序。我们可以通过下面的例子来展示过程宏的工作原理。这里我们调用一个以expensiveComputation()作为参数的DebugLog 宏。这个宏在编译时会判断程序是配置在开发模式下运行还是在生产模式下运行。在开发模式下，会运行expensiveComputation()这样一个昂贵的诊断计算，并打印调试输出，以帮助发现和定位问题。在生产模式下，为了降低性能开销，我们不希望运行这个函数，也不会产生调试输出。
+
+@DebugLog( expensiveComputation() )
+上述的宏DebugLog 可以这样实现：
+
+public macro DebugLog(input: Tokens) {
+    if (globalConfig.mode == Mode.development) {
+        return quote( println( ${input} ) )
+    }
+    else {
+        return quote()
+    }
+}
+仓颉的宏定义语法与函数定义类似，其参数只能是 token 序列（即 Tokens 类型），其返回值是经过变换后的 token 序列。这个返回值就是宏调用（宏展开）后实际生成的代码。在上面的例子中，如果是在development模式下，返回值会在输入的 token 序列外面，加上println调用，因此除了执行input部分，还会把执行结果打印出来。如果不是development模式，则返回空序列，也就是完全忽略了input部分，不会生成任何代码。
+
+Late-stage 宏和模板宏
+下面我们介绍两种正在开发中的宏定义，即Late-stage 宏和模板宏，它们将在仓颉未来的版本中发布。
+
+上述过程宏的输入 token 序列不包含程序的语义信息，但在某些情况下，我们希望在宏定义中根据有关变量的类型或类和接口声明的信息做出相应的处理，这种能力很难通过过程宏来实现。以下面的程序为例：
+
+@FindType
+var x1: Employee = Employee("Fred Johnson")
+// getting the type info of `x1`: easy, it's right there
+
+@FindType
+var x2 = Employee("Bob Houston")
+// getting the type info of `x2`: hard, requires type inference
+假设宏FindType希望得到下面变量声明中变量的类型，并将其打印或加入日志。对于x1来说，它的类型（Employee）在语法中已经明确给出了，我们可以在输入的 token 序列中将其提取出来。然而，变量x2的类型在声明中并没有明确给出来，因此无法从输入 token 序列中直接得到。其类型信息需要靠类型推断计算出来，但宏展开是发生在语法分析阶段，类型推断还没有进行，因此我们还不具备相关信息。Late-stage 宏通过将宏展开延迟到类型推断之后，能够获取并利用程序的各种语义信息，包括这种推断的类型信息。
+
+Late-stage 宏允许基于类型信息和代码中的非局部定义生成代码。这是一个强大的功能，它扩展了宏定义的处理能力。但它同时也是一个表达力更受限制的特性，因为在类型已知之后，对现有代码的根本更改不再是可能的。
+
+如果我们希望对一些具有非常固定语法模式的代码做一些重写，那么模板宏会是比普通的过程宏更易用的选择。
+
+public template macro unless {
+    template (cond: Expr, block: Block) {
+        @unless (cond) block
+            =>
+        if (! cond) block
+    }
+}
+上面的模板宏定义将允许用户写出如下的程序：
+
+@unless (x > 0) {
+    print("x not greater than 0")
+}
+宏展开时将会根据上面模板宏的定义，匹配上面的模板，提取出 cond 和 block，然后将其转换为：
+
+if (! x > 0) {
+    print("x not greater than 0")
+}
+模板宏的优点在于，它直接描述预期的源代码和目标代码，将重点放在关键代码段的转换上。虽然过程宏可以做同样的事情，但过程宏的定义会更加冗长且易出错。

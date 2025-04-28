@@ -1,0 +1,65 @@
+原生语法扩展能力
+更新时间: 2024-09-06 16:33
+本节主要介绍一些仓颉原生语法特性在构建 eDSL 上的应用。使用这些语法来编写的代码，既是 eDSL 的程序，符合领域习惯，具有领域特定含义，又“天然”是合法的仓颉程序。这些语法大多在高效编程章节给出了介绍，这里我们重点介绍它们在构建 eDSL 中的作用。
+
+类型扩展和属性
+类型扩展允许我们在不侵入式修改原类型的前提下，为其添加新的功能，尤其是针对语言的原生类型，以及一些外部库定义的类型，这种扩展可以提高类型的易用性。属性机制可以为字段访问提供 getter 和 setter 支持，隐藏对数据访问的细节，但我们还可以像直接访问字段那样的语法来隐式调用 getter 和 setter。这两种特性结合，就能写出一些能够自然表达领域含义的程序。例如在图书馆借书的场景，我们想把还书的时间设置为 2 周后的日期，构造一种类似自然语言的表达，那么期望写成：
+
+var bookReturnDate: DateTime = 2.weeks.later
+这里可以使用属性重新实现对 Int64 的扩展：
+
+extend Int64 {
+    prop weeks: Int64 {
+        get() {
+            this * 7
+        }
+    }
+
+    prop later: DateTime {
+        get() {
+            DateTime.now() + Duration.day * this
+        }
+    }
+}
+命名参数和参数默认值
+在构建 eDSL 时，需要针对一些对象进行参数配置，通常会遇到两类问题：
+
+配置参数较多，容易弄错顺序。
+不希望每次把所有参数配置都写一遍，大多数情况下应该使用默认值。
+针对这种场景，可以结合命名参数和参数默认值的特性来解决，比如我们要设置在平面上所占的矩形区域的大小，需要确定其上下左右的位置，通常其上边和左边默认为 0 坐标，可以实现如下：
+
+class Rect {
+    static func zone(top!: Int64 = 0, left!: Int64 = 0, bottom!: Int64, right!: Int64): Rect {
+        //
+    }
+}
+那么在使用时可以更清晰的进行矩形区域的配置，比如允许以下调用方式：
+
+Rect.zone(bottom: 10, right: 10) // top和left采用默认值
+Rect.zone(top: 5, bottom: 10, right: 10) // left采用默认值
+Rect.zone(right: 10, bottom: 10) // 无需记住参数顺序
+操作符重载
+操作符重载可以使一些非数值类型的对象，实现算数运算符的语法，比如在图书馆的例子中，之所以能写出
+
+DateTime.now() + Duration.day * this
+实际上是在仓颉标准库中，分别对 DateTime 的“+”操作和 Duration 的“*”操作进行重载，比如：
+
+//DateTime
+public operator func +(r: Duration): DateTime
+
+//Duration
+public operator func *(r: Int64): Duration
+尾随 lambda
+前文介绍了尾随 lambda 的概念，并从构建 DSL 的视角介绍了它的用途。这里我们再给出一个声明式 UI 中的例子，人们可以用尾随 lambda 表达组件间的分层关系，构造一种类似 HTML 的表达范式：
+
+Column {
+    Image()
+    Row {
+        Text()
+        Text()
+    }
+}
+其中 Column 其实是对名为 Column 函数的调用，而后面的花括号其实是仓颉的 lambda 表达式，是 Column 函数调用的参数，以尾随 lambda 的方式提供。Row 中采用的也是同样的语法。
+
+关键字省略
+eDSL 的语法噪音是指由宿主语言引入，但又与领域实际的业务抽象无关的语法。语法噪音会影响 eDSL 的可读性。仓颉支持构造对象时省略 new，允许行尾省略“;”，以及函数返回值省略 return 的能力，可以进一步简化 eDSL 表达，降低语法噪音。

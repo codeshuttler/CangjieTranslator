@@ -1,0 +1,152 @@
+仓颉语言
+std.ast 包
+更新时间: 2024-09-06 16:33
+功能介绍
+ast 包主要包含了仓颉源码的语法解析器和仓颉语法树节点，提供语法解析函数。可将仓颉源码的词法单元 (Tokens) 解析为抽象语法树 (Abstract Syntax Tree) 节点对象。
+
+仓颉 ast 包提供了 Macro With Context 的相关函数，用于在宏展开时获取展开过程中的上下文相关信息。在嵌套宏场景下，内层宏可以调用库函数 assertParentContext(String) 来保证内层宏调用一定嵌套在特定的外层宏调用中。如果内层宏调用这个函数时没有嵌套在给定的外层宏调用中，该函数将抛出一个错误。同时，函数 insideParentContext(String) 也用于检查内层宏调用是否嵌套在特定的外层宏调用中，但是返回一个布尔值。Macro With Context 的相关函数只能作为函数被直接调用，不能赋值给变量，不能作为实参或返回值使用。
+
+Macro With Context 相关函数如下：
+
+assertParentContext(String)
+getChildMessages(String)
+insideParentContext(String)
+setItem(String, Bool)
+setItem(String, Int64)
+setItem(String, String)
+
+API 列表
+函数
+函数名	功能
+assertParentContext(String)	检查当前宏调用是否在特定的宏调用内;若检查不符合预期，编译器出现一个错误提示。
+cangjieLex(String)	将字符串转换为 Tokens 类型。
+cangjieLex(String, Bool)	将字符串转换为 Tokens 类型。
+compareTokens(Tokens, Tokens)	用于比较两个Tokens是否一致。
+diagReport(DiagReportLevel, Tokens, String, String)	报错接口，在编译过程的宏展开阶段输出错误提示信息，支持 WARNING 和 ERROR 两个等级的报错。
+getChildMessages(String)	获取特定内层宏发送的信息。
+getTokenKind(UInt16)	将词法单元种类序号转化为 TokenKind。
+insideParentContext(String)	检查当前宏调用是否在特定的宏调用内，返回一个布尔值。
+parseDecl(Tokens, String)	用于解析一组词法单元，获取一个 Decl 类型的节点。
+parseDeclFragment(Tokens, Int64)	用于解析一组词法单元，获取一个 Decl 类型的节点和继续解析节点的索引。
+parseExpr(Tokens)	用于解析一组词法单元，获取一个 Expr 类型的节点。
+parseExprFragment(Tokens, Int64)	用于解析一组词法单元，获取一个 Expr 类型的节点和继续解析节点的索引。
+parseProgram(Tokens)	用于解析单个仓颉文件的源码，获取一个 Program 类型的节点。
+setItem(String, Bool)	内层宏通过该接口发送 Bool 类型的信息到外层宏。
+setItem(String, Int64)	内层宏通过该接口发送 Int64 类型的信息到外层宏。
+setItem(String, String)	内层宏通过该接口发送 string 类型的信息到外层宏。
+
+接口
+接口名	功能
+ToBytes	提供对应类型的序列化功能。
+ToTokens	实现对应类型的实例到 Tokens 类型转换的接口，作为支持quote插值操作必须实现的接口。
+
+类
+类名	功能
+Annotation	表示编译器内置的注解节点。
+Argument	表示函数调用的实参节点。
+ArrayLiteral	表示 Array 字面量节点。
+AsExpr	表示一个类型检查表达式。
+AssignExpr	表示赋值表达式节点。
+BinaryExpr	表示一个二元操作表达式节点。
+Block	表示块节点。
+Body	表示 Class 类型、 Struct 类型、 Interface 类型以及扩展中由 {} 和内部的一组声明节点组成的结构。
+CallExpr	表示函数调用节点节点。
+ClassDecl	类定义节点。
+ConstPattern	表示常量模式节点。
+Constructor	表示 enum 类型中的 Constructor 节点。
+Decl	所有声明节点的父类，继承自 Node 节点，提供了所有声明节点的通用接口。
+DoWhileExpr	表示 do-while 表达式。
+EnumDecl	表示一个 Enum 定义节点。
+EnumPattern	表示 enum 模式节点。
+ExceptTypePattern	表示一个用于异常模式状态下的节点。
+Expr	所有表达式节点的父类，继承自 Node 节点。
+ExtendDecl	表示一个扩展定义节点。
+ForInExpr	表示 for-in 表达式。
+FuncDecl	表示一个函数定义节点。
+FuncParam	表示函数参数节点，包括非命名参数和命名参数。
+FuncType	表示函数类型节点。
+GenericConstraint	表示一个泛型约束节点。
+GenericParam	表示一个类型形参节点。
+IfExpr	表示条件表达式。
+ImportContent	表示包导入节点中的导入项。
+ImportList	表示包导入节点。
+IncOrDecExpr	表示包含自增操作符（++）或自减操作符（--）的表达式。
+InterfaceDecl	表示接口定义节点。
+IsExpr	表示一个类型检查表达式。
+JumpExpr	表示循环表达式的循环体中的 break 和 continue。
+LambdaExpr	表示 Lambda 表达式，是一个匿名的函数。
+LetPatternExpr	表示 let 声明的解构匹配节点。
+LitConstExpr	表示一个常量表达式节点。
+MacroDecl	表示一个宏定义节点。
+MacroExpandDecl	表示宏调用节点。
+MacroExpandExpr	表示宏调用节点。
+MacroExpandParam	表示宏调用节点。
+MacroMessage	记录内层宏发送的信息。
+MainDecl	表示一个 main 函数定义节点。
+MatchCase	表示一个 MatchCase 类型。
+MatchExpr	表示模式匹配表达式实现模式匹配。
+MemberAccess	表示成员访问表达式。
+Modifier	表示该定义具备某些特性，通常放在定义处的最前端。
+Node	所有仓颉语法树节点的父类。
+OptionalExpr	表示一个带有问号操作符的表达式节点。
+PackageHeader	表示包声明节点。
+ParenExpr	表示一个括号表达式节点，是指使用圆括号括起来的表达式。
+ParenType	表示括号类型节点。
+Pattern	所有模式匹配节点的父类，继承自 Node 节点。
+PrefixType	表示带问号的前缀类型节点。
+PrimaryCtorDecl	表示一个主构造函数节点。
+PrimitiveType	表示一个基本类型节点。
+PrimitiveTypeExpr	表示基本类型表达式节点。
+Program	表示一个仓颉源码文件节点。
+PropDecl	表示一个属性定义节点。
+QualifiedType	表示一个用户自定义成员类型。
+QuoteExpr	表示 quote 表达式节点。
+QuoteToken	表示 quote 表达式节点内任意合法的 token。
+RangeExpr	表示包含区间操作符的表达式。
+RefExpr	表示一个使用自定义类型节点相关的表达式节点。
+RefType	表示一个用户自定义类型节点。
+ReturnExpr	表示 return 表达式节点。
+SpawnExpr	表示 Spawn 表达式。
+StructDecl	表示一个 Struct 节点。
+SubscriptExpr	表示索引访问表达式。
+SynchronizedExpr	表示 synchronized 表达式。
+ThisType	表示 This 类型节点。
+ThrowExpr	表示 throw 表达式节点。
+Tokens	对 Token 序列进行封装的类型。
+TokensIterator	实现 Tokens 的迭代器功能。
+TrailingClosureExpr	表示尾随 Lambda 节点。
+TryExpr	表示 try 表达式节点。
+TupleLiteral	表示元组字面量节点。
+TuplePattern	表示 Tuple 模式节点。
+TupleType	表示元组类型节点。
+TypeAliasDecl	表示类型别名节点。
+TypeConvExpr	表示类型转换表达式。
+TypeNode	所有类型节点的父类，继承自 Node。
+TypePattern	表示类型模式节点。
+UnaryExpr	表示一个一元操作表达式节点。
+VArrayExpr	表示 VArray 的实例节点。
+VArrayType	表示 VArray 类型节点。
+VarDecl	表示变量定义节点。
+VarOrEnumPattern	表示当模式的标识符为 Enum 构造器时的节点。
+VarPattern	表示绑定模式节点。
+Visitor	一个抽象类，其内部默认定义了访问不同类型 AST 节点访问（visit）函数。
+WhileExpr	表示 while 表达式。
+WildcardExpr	表示通配符表达式节点。
+WildcardPattern	表示通配符模式节点。
+
+枚举
+枚举名	功能
+DiagReportLevel	表示报错接口的信息等级，支持 ERROR 和 WARNING 两种格式。
+ImportKind	表示导入语句的类型，包括单导入、别名导入、全导入和多导入四种类型。
+TokenKind	表示仓颉编译内部所有的词法结构，包括符号、关键字、标识符、换行等。
+
+结构体
+结构体名	功能
+Position	表示位置信息的数据结构，包含文件ID，行号和列号。
+Token	词法单元类型。
+
+异常类
+异常类名	功能
+ASTException	ast 库的异常类，在 ast 库调用过程中发生异常时使用。
+MacroContextException	ast 库的上下文宏异常类，在上下文宏的相关接口中发生异常时使用。
+ParseASTException	ast 库的解析异常类，在节点解析过程中发生异常时使用。

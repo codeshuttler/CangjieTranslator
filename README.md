@@ -68,10 +68,122 @@ Python Requirements:
 
 All code in this repository is tested under the environment of `Python 3.11.9`. We use conda to construct a virtual environment to run the python program.
 
+# Training
+
+## Continued Pretraining
+
+First, the original data for Continued Pretraining is stored in `raw_data/cangjie_gitee_codes.json/cangjie.json`. We use an LLM to translate the Cangjie code into Java, C++, and Python:
+```bash
+python source_synthetic_java.py
+python source_synthetic_cpp.py
+python source_synthetic_python.py
+```
+The outputs are saved to `datasets/generated_java`, `datasets/generated_cpp`, and `datasets/generated_python`, respectively.
+
+Next, we generate the Continued Pretraining dataset:
+```bash
+python pretrain_generate.py
+```
+This script collects all the `datasets/generated_java/*/*/data.json` files and outputs them into `datasets/pretrain_dataset.jsonl`.
+
+We then split the dataset and save it in Huggingface dataset format:
+```bash
+python save_as_hf.py datasets/pretrain_dataset.jsonl datasets/cangjie_pretrain_dataset
+```
+This stores the final Continued Pretraining data in `datasets/cangjie_pretrain_dataset`.
+
+Additionally, we add Cangjie documentation data to the Continued Pretraining. First, we export it from text files to JSON:
+```bash
+python export_text_files_to_jsonl.py raw_data/cangjie_documents datasets/pretrain_cangjie_documents_dataset.jsonl
+```
+This produces the data file `datasets/pretrain_cangjie_documents_dataset.jsonl`.
+
+We then convert the documentation data into Huggingface dataset format:
+```bash
+python save_as_hf.py datasets/pretrain_cangjie_documents_dataset.jsonl datasets/cangjie_pretrain_documents_dataset --test-ratio 0 --valid-ratio 0
+```
+This results in the dataset `datasets/cangjie_pretrain_documents_dataset`.
+
+After obtaining `datasets/cangjie_pretrain_dataset` and `datasets/cangjie_pretrain_documents_dataset`, we specify the paths to these datasets in [LLaMA-Factory-Cangjie](https://github.com/codeshuttler/LLaMA-Factory-Cangjie) and start training. Install dependencies and execute in the LLaMA-Factory-Cangjie directory:
+```bash
+llamafactory-cli train hparams/cangjie/cangjie-qwen2-7b/cangjie_pretrain.yaml
+```
+
+## SFT
+
+First, we synthesize the Instruction Fine-tuning dataset:
+```bash
+python sft_generate.py --languages java,python,cpp
+```
+This generates the initial dataset `datasets/sft_dataset_java-python-cpp.jsonl`.
+
+Next, we perform automated cleaning of the dataset:
+```bash
+python sft_clean.py --input datasets/sft_dataset_cpp-java-python.jsonl --output datasets/sft_full_dataset_cleaned.jsonl --export datasets/clean_code_full
+```
+This produces the cleaned dataset `datasets/sft_full_dataset_cleaned.jsonl`, and you can inspect the cleaned retained data in `datasets/clean_code_full`.
+
+We then convert it to Huggingface format:
+```bash
+python save_as_hf.py datasets/sft_full_dataset_cleaned.jsonl datasets/cangjie_sft_full_dataset
+```
+This results in the dataset `datasets/cangjie_sft_full_dataset`.
+
+After obtaining `datasets/cangjie_sft_full_dataset`, we specify the path in [LLaMA-Factory-Cangjie](https://github.com/codeshuttler/LLaMA-Factory-Cangjie) and start training. Install dependencies and execute in the LLaMA-Factory-Cangjie directory:
+```bash
+llamafactory-cli train hparams/cangjie/cangjie-qwen2-7b/cangjie_sft.yaml
+```
+
+# Incremental Synthesis
+
+We download the LeetCode dataset from Huggingface and export it locally:
+```bash
+python export_leetcode.py
+```
+This creates the directory `raw_data/leetcode_nonpara`.
+
+We then perform Incremental Synthesis using the model obtained from SFT:
+```bash
+python test_model.py --lang java --input "raw_data/leetcode_nonpara" --output "results/leetcode_java_nonpara_out" --model "/data/user/github/LLaMA-Factory/saves/cangjie-qwen2-7b/full/sft_full_v2/checkpoint-22091" --device cuda:0
+python test_model.py --lang python --input "raw_data/leetcode_nonpara" --output "results/leetcode_python_nonpara_out" --model "/data/user/github/LLaMA-Factory/saves/cangjie-qwen2-7b/full/sft_full_v2/checkpoint-22091" --device cuda:0
+python test_model.py --lang cpp --input "raw_data/leetcode_nonpara" --output "results/leetcode_cpp_nonpara_out" --model "/data/user/github/LLaMA-Factory/saves/cangjie-qwen2-7b/full/sft_full_v2/checkpoint-22091" --device cuda:0
+```
+
+# Compiler Feedback
+
+We use a compiler to check and fix the translation results:
+```bash
+python check_compile_results.py --input results/leetcode_java_nonpara_out/
+python check_execution_results.py --language java --input results/leetcode_java_nonpara_out/ --auto-fix --fix-steps "simple,rule,llm"
+
+python check_compile_results.py --input results/leetcode_python_nonpara_out/
+python check_execution_results.py --language python --input results/leetcode_python_nonpara_out/ --auto-fix --fix-steps "simple,rule,llm"
+
+python check_compile_results.py --input results/leetcode_cpp_nonpara_out/
+python check_execution_results.py --language cpp --input results/leetcode_cpp_nonpara_out/ --auto-fix --fix-steps "simple,rule,llm"
+```
+
+Based on the correctly repaired code, we generate KTO positive and negative feedback data:
+```bash
+python feedback_generate_kto.py --language java --input results/leetcode_java_nonpara_out --output datasets/feedback_kto_java_dataset.jsonl
+python feedback_generate_kto.py --language python --input results/leetcode_python_nonpara_out --output datasets/feedback_kto_python_dataset.jsonl
+python feedback_generate_kto.py --language cpp --input results/leetcode_cpp_nonpara_out --output datasets/feedback_kto_cpp_dataset.jsonl
+```
+
+We then convert the KTO training data into Huggingface format:
+```bash
+cat datasets/feedback_kto_java_dataset.jsonl datasets/feedback_kto_python_dataset.jsonl datasets/feedback_kto_cpp_dataset.jsonl > datasets/feedback_kto_full_dataset.jsonl
+python save_as_hf.py datasets/feedback_kto_full_dataset.jsonl datasets/cangjie_feedback_kto_full_dataset --test-ratio 0 --valid-ratio 0
+```
+
+After obtaining `datasets/cangjie_feedback_kto_full_dataset`, we specify the path in [LLaMA-Factory-Cangjie](https://github.com/codeshuttler/LLaMA-Factory-Cangjie) and start training. Install dependencies and execute in the LLaMA-Factory-Cangjie directory:
+```bash
+llamafactory-cli train hparams/cangjie/cangjie-qwen2-7b/cangjie_lora_kto.yaml
+```
 
 # Run Evaluation
 The evaluation workflow is in the 
-The entire evaluation workflow is in the `run.sh` script. The evaluation results are generated in the `results` folder. 
+The entire evaluation workflow is in the `evaluation.sh` script. The evaluation results are generated in the `results` folder. 
 
 Due to the large file size of our evaluation results, we compressed them and placed them under `Releases`.
 

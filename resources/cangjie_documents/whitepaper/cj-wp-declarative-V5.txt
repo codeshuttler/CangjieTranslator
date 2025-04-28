@@ -1,0 +1,120 @@
+敏捷扩展案例：声明式 UI
+更新时间: 2024-09-06 16:33
+声明式 UI 是一种面向 UI 编程的开发范式，它使开发者只需要描述 UI 组件间的布局关系、以及 UI 组件与状态（即渲染所需要的数据）间的绑定关系，而不需要关心 UI 界面实际渲染刷新的实现细节，因而提高了开发者的开发效率。近几年业界 UI 框架开始采用 eDSL 的方式构建声明式 UI，本节以声明式 UI 为例，介绍如何使用仓颉的领域扩展能力来构建 UI eDSL。
+
+UI 组件布局
+UI eDSL 首先需要具备描述各种组件在二维平面如何排布的能力，能够清晰的表达组件的长、宽等配置信息，以及组件间的层次关系；同时期望 UI eDSL 能使代码结构与 UI 界面具备一定的相似性，达到“所见即所得”的效果；另外 UI eDSL 应该非常简洁，尽量减少 UI 描述以外的“噪音”。
+
+假设要实现如下所示的 UI 界面，它由一段文本和一个按钮组成，文本和按钮需要纵向居中排列；同时需要为按钮设置点击事件处理逻辑：
+
+
+
+我们使用仓颉定义的 UI eDSL，可以通过如下代码来描述期望的 UI 界面，其中 Text 组件显示一段文本，Button 组件实现按钮功能，为了使它们纵向排列，把这两个组件嵌在一个 Column 布局组件中。
+
+class CustomView {
+    ...
+    func build() {
+        Column {
+            Text("${count} times")
+                .align( Center )
+                .margin(top: 50.vp, bottom: 50.vp)
+            Button("Click")
+                .align( Center )
+                .onClick { evt =>
+                    count++
+                }
+        }.width(100.percent)
+        .height(100.percent)
+    }
+    ...
+}
+作为对比，假如仓颉不提供相应的扩展能力，可能需要开发者写出如下代码。从可读性上，前者更为清晰简洁；从字符数统计上，后者相比前者需要开发者多写近 70% 的代码，这在更为复杂的页面上，将是非常可观的开销。
+
+class CustomView {
+    ...
+    func build() {
+        new Column ({ =>
+            new Text("${count} times")
+                .align(Alignment.Center)
+                .margin(Length(50, Unit.vp), Length(0, Unit.vp), Length(50, Unit.vp), Length(0, Unit.vp))
+            new Button("Click")
+                .align(Alignment.Center)
+                .onClick ({ evt =>
+                    count++
+                })
+        }).width(Length(100, Unit.percent))
+        .height(Length(100, Unit.percent))
+    }
+    ...
+}
+那么在使用仓颉语言定义如上的 eDSL 时，我们采用了以下特性：
+
+使用尾随 Lambda 来描述组件间的分层关系，比如 Column 作为 Text 和 Button 的父组件，决定了子组件的排列方式；同时尾随 Lambda 也可以省略“()”，使语法更简洁。
+
+使用命名参数和参数默认值的特性，使传参更清晰简洁，比如在设置 margin 时，只需要设置 top 和 bottom，未设置的参数选择默认值；同时命名参数使得开发者清晰的知道设置的是哪个参数，不用专门去记参数顺序，提高了代码可读性，不易犯错。
+
+通过类型扩展能力，为整数类型扩展出带有长度单位的表达能力，比如 100.percent 等价于“100%”，而 50.vp 等价于“50 vp”，其相比只用整数，提供了类型校验的保障；而相比使用 Length 类，语法更简洁，可读性更高。
+
+仓颉支持类实例化时省略“new”关键字，通过类型推断实现省略枚举前缀（比如直接用 Center 而不是 Alignment.Center），进一步增强了表达的简洁性。
+
+UI 组件与状态绑定关系
+状态是一组与界面关联的数据，在声明式 UI 下，通常使用view = f(state)来表达 UI 界面（view）与状态（state）的关系，其中 f 作为 view 与 state 之间的纽带，由框架实现，并向 UI 开发者隐藏。通常 f 被实现为一套响应式的机制，即：
+
+建立 state 到 view 中组件的绑定关系。
+捕获 state 修改，触发相应组件的刷新。
+我们修改上面的例子实现一个计数器。我们为组件增加一个状态 count，同时为 Button 增加点击事件处理，每点击一次按钮，就使 count 自增 1。另外组件 Text 会显示当前的点击次数，即 count 值。
+
+class CustomView {
+    @State var count: Int64 = 0
+    ...
+    func build() {
+        Column {
+            Text("${count} times")
+                .align( Center )
+                .margin(top: 50.vp, bottom: 50.vp)
+            Button("Click")
+                .align( Center )
+                .onClick { evt =>
+                    count++
+                }
+        }.width(100.percent)
+        .height(100.percent)
+    }
+    ...
+}
+我们通过为 count 变量增加 @State 宏修饰，使其具有响应式的能力，即可以捕获在点击事件中的改动，并触发 Text 组件的刷新，而这种实现机制都隐藏在 @State 的宏实现中。以下是一种示意的宏展开代码逻辑（实际上如前所述，宏展开发生在编译阶段，展开逻辑以 AST 形式存在）：
+
+class CustomView {
+    private var count_ = State<Int64>(0)
+
+    mut prop count: Int64 {
+        get(): Int64 {
+            count_.bindToComponent()
+            count_.get()
+        }
+        set(newValue: Int64) {
+            count_.set(newVaue)
+            count_.notifyComponentChanges()
+        }
+    }
+    ...
+    func build() {
+        Column {
+            Text("${count} times")
+                .align( Center )
+                .margin(top: 50.vp, bottom: 50.vp)
+            Button("Click")
+                .align( Center )
+                .onClick { evt =>
+                    count++
+                }
+        }.width(100.percent)
+        .height(100.percent)
+    }
+    ...
+}
+实现以上效果，我们采用了以下特性：
+
+定义用于状态管理的宏 @State，其展开生成相应的状态处理代码，从而减少开发者编写一些模板化和重复性的代码，简化了状态声明和管理的复杂度。
+采用属性机制，实现对实际状态数据的代理，对外保持读写 count 的形式，但在其内部实现中，通过 get 方法来捕获“读”操作，建立状态与组件的绑定关系；通过 set 方法捕获“写”操作，并通知其绑定的组件进行刷新。
+以上通过声明式 UI 这个案例，展示了通过灵活使用仓颉的扩展能力，可以提高代码的可读性、简洁性和正确性，简化开发者负担，降低框架或者库的使用门槛，有利于生态推广。

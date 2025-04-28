@@ -1,0 +1,28 @@
+Actor 和分布式编程
+更新时间: 2024-09-06 16:33
+并发/分布式编程在当下多核、众核硬件环境下显得越来越重要，仓颉在语言设计初期就开始考虑这部分的能力支持，并已经初步完成了设计和原型工作，在不久的将来很快就能和开发者见面。
+
+我们希望在仓颉语言中内置 Actor 特性，并增加类型系统的支持，为开发者提供一种安全且直观的并发/分布式模型。
+
+Actor 是一种用于并发运算的程序抽象概念，本质是创建一个运算实例，在接收到一则消息时做出响应，如建立新的 Actor、发送消息给其他 Actor、指定接收到下一个消息要产生的行为等，其通过消息传递的策略在并发线程中进行通信，从而避免数据竞争的问题。
+
+如以下简单示例中，用 actor 关键字定义 Account Actor 类型，以及一个实例函数 performWithdraw 和一个接收器函数 withdraw，接收器可以接受和处理消息，实例函数可以访问 Actor 内部的状态。
+
+actor Account {
+    instance var balance: Int64
+    init(x: Int64) {
+        this.balance = x
+    }
+    instance func performWithdraw(amount: Int64): Unit {
+        balance -= amount
+    }
+    receiver func withdraw(amount: Int64): Bool {
+        if (this.balance < amount) {
+            return false
+        } else {
+            this.performWithdraw(amount)
+            return true
+        }
+    }
+}
+值得一提的是，仓颉的 Actor 设计旨在用统一的语言特性来支持并发编程和分布式编程，这可以使开发者采用他们所熟悉编程方式来编写并发或者分布式的程序，然后轻松将其移动到分布式（例如集群）环境中。

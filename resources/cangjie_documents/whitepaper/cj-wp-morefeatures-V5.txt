@@ -1,0 +1,156 @@
+其他现代特性及语法糖
+更新时间: 2024-09-06 16:33
+函数重载
+仓颉允许在同一作用域内定义多个同名函数。编译器根据参数的个数和类型，来决定函数调用实际执行的是哪个函数。例如，下面的绝对值函数，为每种数值类型都提供了对应的实现，但这些实现都具有相同的函数名 abs，从而让函数调用更加简单。
+
+func abs(x: Int64): Int64 { ... }
+func abs(x: Int32): Int32 { ... }
+func abs(x: Int16): Int16 { ... }
+...
+命名参数
+命名参数是指在调用函数时，提供实参表达式的同时，还需要同时提供对应形参的名字。使用命名参数可以提升程序的可读性，减少参数的顺序依赖性，让程序更加易于扩展和维护。
+
+在仓颉中，函数定义时通过在形参名后添加 ! 来定义命名参数。当形参被定义为命名参数后，调用这个函数时就必须在实参值前指定参数名，如下面的例子所示：
+
+func dateOf(year!: Int, month!: Int, dayOfMonth!: Int) {...}
+
+dateOf(year: 2024, month: 6, dayOfMonth: 21)
+参数默认值
+仓颉的函数定义中，可以为特定形参提供默认值。函数调用时，如果选择使用该默认值做实参，则可以省略该参数。
+
+这个特性可以减少很多函数重载或者引入建造者模式的需求，降低代码复杂度。
+
+func dateOf(year!: Int64, month!: Int64, dayOfMonth!: Int64, timeZone!: TimeZone = TimeZone.Local) {
+    ...
+}
+
+dateOf(year: 2024, month: 6, dayOfMonth: 21) // ok
+dateOf(year: 2024, month: 6, dayOfMonth: 21, timeZone: TimeZone.UTC) // ok
+尾随 lambda（trailing lambda）
+仓颉支持尾随 lambda 语法糖，从而更易于 DSL 中实现特定语法。具体来说，很多语言中都内置提供了如下经典的条件判断或者循环代码块：
+
+if (x > 0) {
+    x = -x
+}
+
+while (x > 0) {
+    x--
+}
+尾随 lambda 则能够让 DSL 开发者定制出类似的代码块语法，而无需在宿主语言中内置。例如，在仓颉中，我们支持下面这种方式的函数调用：
+
+func unless(condition: Bool, f: ()->Unit) {
+    if(!condition) {
+        f()
+    }
+}
+
+let a = f(...)
+unless(a > 0) {
+    print("no greater than 0")
+}
+这里对 unless 函数的调用看上去像是一种特殊的 if 表达式，这种语法效果是通过尾随 lambda 语法实现 —— 如果函数的最后一个形参是函数类型，那么实际调用这个函数时，我们可以提供一个 lambda 表达式作为实参，并且把它写在函数调用括号的外面。尤其当这个 lambda 表达式为无参函数时，我们允许省略 lambda 表达式中的双箭头 =>，将其表示为代码块的形式，从而进一步减少对应 DSL 中的语法噪音。因此，在上面的例子中，unless 调用的第二个实参就变成了这样的 lambda 表达式：
+
+{ print("no greater than 0") }
+如果函数定义只有一个参数，并且该参数是函数类型，我们使用尾随 lambda 调用该函数时还可以进一步省略函数调用的括号，从而让代码看上去更简洁自然。
+
+func runLater(fn:()->Unit) {
+    sleep(5 * Duration.Second)
+    fn()
+}
+
+runLater() { // ok
+    println("I am later")
+}
+
+runLater { // 可以进一步省略括号
+    println("I am later")
+}
+管道（Pipeline）操作符
+仓颉中引入管道（Pipeline）操作符，来简化嵌套函数调用的语法，更直观的表达数据流向。下面的例子中，给出了嵌套函数调用和与之等效的基于管道操作符 |> 的表达式。后者更加直观的反映了数据的流向：|> 左侧的表达式的值被作为参数传递给右侧的函数。
+
+func double(a: Int) {
+    a * 2
+}
+
+func increment(a: Int) {
+    a + 1
+}
+
+double(increment(double(double(5)))) // 42
+
+5 |> double |> double |> increment |> double // 42
+操作符重载
+仓颉中定义了一系列使用特殊符号表示的操作符，其中大多数操作符都允许被重载，从而可以作用在开发者自己定义的类型上，为自定义类型的操作提供更加简洁直观的语法表达。
+
+在仓颉中只需要定义操作符重载函数就能实现操作符重载。在下面的例子中，我们首先定义一个类型 Point 表示二维平面中的点，然后我们通过重载+操作符，来定义两个点上的加法操作。
+
+struct Point {
+    let x: Int
+    let y: Int
+
+    init(x: Int, y: Int) {...}
+
+    operator func +(rhs: Point): Point {
+        return Point(
+            this.x + rhs.x,
+            this.y + rhs.y
+        )
+    }
+}
+
+let a: Point = ...
+let b: Point = ...
+let c = a + b
+属性（property）
+在面向对象范式中，我们常常会将成员变量设计为 private 的，而将成员变量的访问封装成 getter 和 setter 两种 public 方法。
+
+这样可以隐藏数据访问的细节，从而更容易实现访问控制、数据监控、跟踪调试、数据绑定等业务策略。
+
+仓颉中直接提供了属性这一种特殊的语法，它使用起来就像成员变量一样可以访问和赋值，但内部提供了 getter 和 setter 来实现更丰富的数据操作。对成员变量的访问和赋值会被编译器翻译为对相应 getter 和 setter 成员函数的调用。
+
+具体来说，prop 用于声明只读属性，只读属性只具有 getter 的能力，必须提供 get 实现；mut prop 用于声明可变属性。可变属性同时具备 getter 和 setter 的能力，必须提供 get 和 set 实现。
+
+如下示例所示，开发者希望对 Point 类型的各数据成员的访问进行记录，则可以在内部声明 private 修饰的成员变量，通过声明对应的属性来对外暴露访问能力，并在访问的时候使用日志系统 Logger 记录它们的访问信息。对使用者来说，使用对象 p 的属性与访问它的成员变量一样，但内部却实现了记录的功能。
+
+注意这里 x 和 y 是只读的，只有 get 实现，而 color 则是可变的，用 mut prop 修饰，同时具有get 和 set 实现。
+
+class Point {
+    private let _x: Int
+    private let _y: Int
+    private var _color: String
+
+    init(x: Int, y: Int, color: String) {...}
+
+    prop x: Int {
+        get() {
+            Logger.log(level: Debug, "access x")
+            return _x
+        }
+    }
+
+    prop y: Int {
+        get() {
+            Logger.log(level: Debug, "access y")
+            return _y
+        }
+    }
+
+    mut prop color: String {
+        get() {
+            Logger.log(level: Debug, "access color")
+            return _color
+        }
+
+        set(c) {
+            Logger.log(level: Debug, "reset color to ${c}")
+            _color = c
+        }
+    }
+}
+
+main() {
+    let p = Point(0, 0, "red")
+    let x = p.x // "access x"
+    let y = p.y // "access y"
+    p.color = "green" // "reset color to green"
+}

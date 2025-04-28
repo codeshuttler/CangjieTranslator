@@ -25,12 +25,17 @@ class ModelPredictor(object):
         load_4bit=False,
         enforce_eager=False,
         max_lora_rank=256,
+        enable_prefix_caching=True,
+        max_model_len=8192,
+        gpu_memory_utilization=0.9
     ) -> None:
+        # 加载模型
         self.model_path = model_path
         self.use_vllm = use_vllm
 
         if self.use_vllm:
             self.lora_adapter = None
+            # 不存在 config.json 文件
             if os.path.exists(model_path) and not os.path.exists(os.path.join(model_path, "config.json")):
                 print(f"No supported config format found in {model_path}, enable lora")
                 # read adapter config get base model path
@@ -44,14 +49,21 @@ class ModelPredictor(object):
                 enable_lora=True
             else:
                 enable_lora=False
+            if device == "auto":
+                num_gpu = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
+            else:
+                num_gpu = 1
             self.llm = vllm.LLM(
                 model=self.model_path,
                 trust_remote_code=True,
-                enable_prefix_caching=True,
+                enable_prefix_caching=enable_prefix_caching,
                 dtype=torch_dtype,
                 enable_lora=enable_lora,
                 enforce_eager=enforce_eager,
                 max_lora_rank=max_lora_rank,
+                tensor_parallel_size=num_gpu,
+                max_model_len=max_model_len,
+                gpu_memory_utilization=gpu_memory_utilization,
             )
         else:
             args = {}

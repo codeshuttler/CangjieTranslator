@@ -1,0 +1,101 @@
+接口扩展
+更新时间: 2024-09-06 16:33
+例如下面的例子，类型 Array 本身没有实现接口 PrintSizeable，但我们可以通过扩展的方式为 Array 增加额外的成员函数 printSize，并实现 PrintSizeable。
+
+interface PrintSizeable {
+    func printSize(): Unit
+}
+
+extend<T> Array<T> <: PrintSizeable {
+    public func printSize() {
+        println("The size is ${this.size}")
+    }
+}
+当使用扩展为 Array 实现 PrintSizeable 之后，就相当于在 Array 定义时实现接口 PrintSizeable。
+
+因此我们可以将 Array 作为 PrintSizeable 的实现类型来使用了，如以下代码所示。
+
+main() {
+    let a: PrintSizeable = Array<Int64>()
+    a.printSize() // 0
+}
+编译执行上述代码，输出结果为：
+
+The size is 0
+我们可以在同一个扩展内同时实现多个接口，多个接口之间使用 & 分开，接口的顺序没有先后关系。
+
+如下面代码所示，我们可以在扩展中为 Foo 同时实现 I1、I2、I3。
+
+interface I1 {
+    func f1(): Unit
+}
+
+interface I2 {
+    func f2(): Unit
+}
+
+interface I3 {
+    func f3(): Unit
+}
+
+class Foo {}
+
+extend Foo <: I1 & I2 & I3 {
+    public func f1(): Unit {}
+    public func f2(): Unit {}
+    public func f3(): Unit {}
+}
+我们也可以在接口扩展中声明额外的泛型约束，来实现一些特定约束下才能满足的接口。
+
+例如我们可以让上面的 Pair 类型实现 Eq 接口，这样 Pair 自己也能成为一个符合 Eq 约束的类型，如下代码所示。
+
+class Pair<T1, T2> {
+    var first: T1
+    var second: T2
+    public init(a: T1, b: T2) {
+        first = a
+        second = b
+    }
+}
+
+interface Eq<T> {
+    func equals(other: T): Bool
+}
+
+extend<T1, T2> Pair<T1, T2> <: Eq<Pair<T1, T2>> where T1 <: Eq<T1>, T2 <: Eq<T2> {
+    public func equals(other: Pair<T1, T2>) {
+        first.equals(other.first) && second.equals(other.second)
+    }
+}
+
+class Foo <: Eq<Foo> {
+    public func equals(other: Foo): Bool {
+        true
+    }
+}
+
+main() {
+    let a = Pair(Foo(), Foo())
+    let b = Pair(Foo(), Foo())
+    println(a.equals(b)) // true
+}
+编译执行上述代码，输出结果为：
+
+true
+如果被扩展的类型已经包含接口要求的函数或属性，那么我们在扩展中不需要并且也不能重新实现这些函数或属性。
+
+例如下面的例子，我们定义了一个新接口 Sizeable，目的是获得某个类型的 size，而我们已经知道 Array 中包含了这个函数，因此我们就可以通过扩展让 Array 实现 Sizeable，而不需要添加额外的函数。
+
+interface Sizeable {
+    prop size: Int64
+}
+
+extend<T> Array<T> <: Sizeable {}
+
+main() {
+    let a: Sizeable = Array<Int64>()
+    println(a.size)
+}
+编译执行上述代码，输出结果为：
+
+0

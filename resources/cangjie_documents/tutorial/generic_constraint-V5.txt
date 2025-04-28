@@ -1,0 +1,89 @@
+泛型约束
+更新时间: 2024-09-06 16:33
+泛型约束的作用是在函数、class、enum、struct 声明时明确泛型形参所具备的操作与能力。只有声明了这些约束才能调用相应的成员函数。在很多场景下泛型形参是需要加以约束的。以 id 函数为例：
+
+func id<T>(a: T) {
+    return a
+}
+
+我们唯一能做的事情就是将函数形参 a 这个值返回，而不能进行 a + 1，println("${a}") 等操作，因为它可能是一个任意的类型，比如 (Bool) -> Bool，这样就无法与整数相加，同样因为是函数类型，也不能通过 println 函数来输出在命令行上。而如果这一泛型形参上有了约束，那么就可以做更多操作了。
+
+约束大致分为接口约束与子类型约束。语法为在函数、类型的声明体之前使用 where 关键字来声明，对于声明的泛型形参 T1, T2，可以使用 where T1 <: Interface, T2 <: Type 这样的方式来声明泛型约束，同一个类型变元的多个约束可以使用 & 连接。例如：where T1 <: Interface1 & Interface2。
+
+例如，仓颉中的 println 函数能接受类型为字符串的参数，如果我们需要把一个泛型类型的变量转为字符串后打印在命令行上，可以对这个泛型类型变元加以约束，这个约束是 core 中定义的 ToString 接口，显然它是一个接口约束：
+
+package core // `ToString` is defined in core.
+
+public interface ToString {
+    func toString(): String
+}
+这样我们就可以利用这个约束，定义一个名为 genericPrint 的函数：
+
+func genericPrint<T>(a: T) where T <: ToString {
+    println(a)
+}
+
+main() {
+    genericPrint<Int64>(10)
+    return 0
+}
+结果为：
+
+10
+如果 genericPrint 函数的类型实参没有实现 ToString 接口，那么编译器会报错。例如我们传入一个函数做为参数时：
+
+func genericPrint<T>(a: T) where T <: ToString {
+    println(a)
+}
+
+main() {
+    genericPrint<(Int64) -> Int64>({ i => 0 })
+    return 0
+}
+如果我们对上面的文件进行编译，那么编译器会抛出泛型类型参数与满足约束的错误。因为 genericPrint 函数的泛型的类型实参不满足约束 (Int64) -> Int64 <: ToString。
+
+除了上述通过接口来表示约束，还可以使用子类型来约束一个泛型类型变元。例如：当我们要声明一个动物园类型 Zoo<T>，但是我们需要这里声明的类型形参 T 受到约束，这个约束就是 T 需要是动物类型 Animal 的子类型， Animal 类型中声明了 run 成员函数。这里我们声明两个子类型 Dog 与 Fox 都实现了 run 成员函数，这样在 Zoo<T> 的类型中，我们就可以对于 animals 数组列表中存放的动物实例调用 run 成员函数：
+
+import std.collection.*
+
+abstract class Animal {
+    public func run(): String
+}
+
+class Dog <: Animal {
+    public func run(): String {
+        return "dog run"
+    }
+}
+
+class Fox <: Animal {
+    public func run(): String {
+        return "fox run"
+    }
+}
+
+class Zoo<T> where T <: Animal {
+    var animals: ArrayList<Animal> = ArrayList<Animal>()
+    public func addAnimal(a: T) {
+        animals.append(a)
+    }
+
+    public func allAnimalRuns() {
+        for(a in animals) {
+            println(a.run())
+        }
+    }
+}
+
+main() {
+    var zoo: Zoo<Animal> = Zoo<Animal>()
+    zoo.addAnimal(Dog())
+    zoo.addAnimal(Fox())
+    zoo.allAnimalRuns()
+    return 0
+}
+
+程序的输出为：
+
+dog run
+fox run

@@ -1,0 +1,16 @@
+try-with-resources
+更新时间: 2024-09-06 16:33
+仓颉使用 try-catch-finally 表达式来实现异常处理，该机制和传统语言的异常处理机制十分相似，但仓颉额外提供了 try-with-resources 表达式语法来自动释放非内存资源。
+
+不同于普通 try 表达式，try-with-resources 表达式中的 catch 块和 finally 块均是可选的，并且 try 关键字其后的块之间可以插入一个或者多个变量定义用来申请一系列的资源对象，这些资源对象在 try-with-resources 表达式中会被自动管理起来，当某个资源发生异常或表达式结束后都会自动释放，达到安全管理资源的目的。
+
+如下实例所示，input 和 output 变量会在 try-with-resources 表达式过程中自动管理，开发者不需要关注当中各种情况的资源释放问题。
+
+try (input = MyResource(),
+    output = MyResource()) {
+    while (input.hasNextLine()) {
+        let lineString = input.readLine()
+        output.writeLine(lineString)
+    }
+}
+这里资源对象的类型（上面例子中的 MyResource）必须已经实现了 Resource 接口，特别是已经实现了 Resource 接口中要求的 isClosed 和 close 函数，能够判别资源是否已经被释放，以及做对应的释放操作。编译器将会在发生异常时或者 try 代码块正常结束时，插入对相应函数的调用，自动释放资源。

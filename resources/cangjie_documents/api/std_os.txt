@@ -1,0 +1,20 @@
+仓颉语言
+std.os 包
+更新时间: 2024-09-06 16:33
+功能介绍
+os 包提供了包括获取或操作当前进程相关信息(如进程参数、环境变量、目录信息等)，注册回调函数及退出当前进程等能力。
+
+目前支持 Linux 平台，macOS 平台，Windows 平台与 HarmonyOS 平台。
+
+API 列表
+函数
+函数名	功能	支持平台
+currentDir()	获取当前工作目录。	Linux、Windows、macOS、HarmonyOS
+envVars()	获取所有环境变量。	Linux、Windows、macOS、HarmonyOS
+getArgs()	返回命令行参数列表，例如在命令行中执行 a.out ab cd ef，其中 a.out 是程序名，返回的列表包含三个元素 ab cd ef。	Linux、Windows、macOS、HarmonyOS
+getEnv(String)	获取指定名称的环境变量值。	Linux、Windows、macOS、HarmonyOS
+homeDir()	获取 home 目录。	Linux、Windows、macOS
+processorCount()	获取处理器数量。	Linux、Windows、macOS、HarmonyOS
+removeEnv(String)	通过指定环境变量名称移除环境变量。	Linux、Windows、macOS、HarmonyOS
+setEnv(String, String)	用于设置一对环境变量。	Linux、Windows、macOS、HarmonyOS
+tempDir()	获取临时目录。	Linux、Windows、macOS、HarmonyOS

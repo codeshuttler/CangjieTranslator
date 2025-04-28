@@ -1,0 +1,32 @@
+仓颉语言
+std.random 包
+更新时间: 2024-09-06 16:33
+功能介绍
+random 包提供生成伪随机数的能力。
+
+API列表
+类
+类名	功能
+Random	提供生成伪随机数的相关功能。
+
+
+class Random
+public open class Random
+功能: 提供生成伪随机数的相关功能。
+
+示例:
+
+import std.random.*
+main() {
+    let m: Random = Random()
+    /* 创建 Random 对象并设置种子来获取随机对象 */
+    m.seed = 3
+    let b: Bool = m.nextBool()
+    let c: Int8 = m.nextInt8()
+    print("b=${b is Bool},")/* 对象也可以是 Bool 类型 */
+    println("c=${c is Int8}")
+    return 0
+}
+运行结果:
+
+b=true,c=true

@@ -1,0 +1,32 @@
+类型扩展
+更新时间: 2024-09-06 16:33
+仓颉支持类型扩展特性，允许我们在不改变原有类型定义代码的情况下，为类型增加成员函数等功能。具体来说，
+
+仓颉的类型扩展可以对已有的类型做如下几类扩展：
+
+添加函数
+添加属性
+添加操作符重载
+实现接口
+下面的例子中，我们为 String 类型增加了 printSize 成员函数，因此在下面的代码中就可以像调用其他预定义的成员函数一样来调用 printSize。
+
+extend String {
+    func printSize() {
+        print(this.size)
+    }
+}
+
+"123".printSize() // 3
+
+而当扩展和接口搭配使用的时候，它更能大幅提升语言的表达能力，我们甚至可以给已有的类型添加新的继承体系。
+
+在下面的例子中，我们可以定义一个新接口 Integer，然后用 extend 给已有的整数类型实现 Integer 接口，这样已有的整数类型就自然成为了 Integer 的子类型。其中 sealed 修饰符表示该接口只能在当前包中被实现（或扩展）。
+
+sealed interface Integer {}
+
+extend Int8 <: Integer {}
+extend Int16 <: Integer {}
+extend Int32 <: Integer {}
+extend Int64 <: Integer {}
+
+let a: Integer = 123 // ok

@@ -1,0 +1,112 @@
+[
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are a professional code translator with expertise in both {{ source_language }} and {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are an expert in {{ source_language }} and {{ target_language }} programming."
+        },
+        {
+            "role": "user",
+             "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are a code translation assistant specializing in converting {{ source_language }} code to {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are a helpful programming tutor."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are a {{ source_language }} expert with deep knowledge of {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. Your are a code translation system."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are a code translation system that specializes in {{ source_language }} and {{ target_language }} programming languages."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are a programmer proficient in multiple programming languages."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are a programmer proficient in {{ source_language }} and {{ target_language }} programming languages."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are a code translation assistant that specializes in converting {{ source_language }} code to {{ target_language }} code."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}. You are a code translation system that specializes in multiple programming languages."
+        },
+        {
+            "role": "user",
+            "content": "Please provide the {{ target_language }} translation for the following {{ source_language }} code:\n{{ source_code }}"
+        }
+    ]
+]

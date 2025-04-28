@@ -1,0 +1,62 @@
+[
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "Translating {{ source_language }} to {{ target_language }} ensures that {{ target_language }} code can be executed.\n{{ source_code }}"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "Please translate the following {{ source_language }} code into {{ target_language }} code while ensuring the logic and functionality remain consistent:\n```{{ source_language_markdown }}\n{{ source_code }}\n```\nProvide the translated {{ target_language }} code."
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "Your task is to accurately translate {{ source_language }} code into {{ target_language }} while preserving the original logic, functionality, and structure.\nTask Instructions:\n1. Preserve Logic and Functionality: Ensure the translated code performs the same operations as the original code.\n2. Follow Best Practices: Use idiomatic constructs and coding conventions specific to {{ target_language }}.\n3. Maintain Readability: Write clean, well-structured, and commented code where necessary.\n4. Handle Edge Cases: Ensure the translation accounts for any language-specific edge cases or differences.\nInput:\nPlease translate the following {{ source_language }} code into {{ target_language }} code:\n```{{ source_language_markdown }}\n{{ source_code }}\n```\nOutput Format:\n1. Translated Code: Provide the translated {{ target_language }} code directly."
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "You are an expert in {{ source_language }} and {{ target_language }} programming. Your goal is to translate {{ source_language }} code into {{ target_language }}, paying close attention to differences in syntax, libraries, and language conventions.\n* Ensure the translated code preserves the original logic, functionality, and structure.\n* Pay close attention to differences in syntax, standard libraries, and idiomatic conventions between the two languages.\n* Avoid introducing unnecessary changes or optimizations unless required for correctness in the target language. \n```{{ source_language_markdown }}\n{{ source_code }}\n```"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "Your task is to translate {{ source_language }} code into {{ target_language }} in a way that is easy for beginners to understand. Provide the translated {{ target_language }} code directly in your response.\n```{{ source_language_markdown }}\n{{ source_code }}\n```"
+        }
+    ],
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "Translate the given {{ source_language }} code into {{ target_language }}. Ensure the translated code is clean and readable.\n```{{ source_language_markdown }}\n{{ source_code }}\n```"
+        }
+    ]
+]

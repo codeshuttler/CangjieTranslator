@@ -1,0 +1,211 @@
+多范式
+更新时间: 2024-09-06 16:33
+仓颉是一个典型的多范式编程语言，对过程式编程、面向对象编程和函数式编程都提供了良好的支持，包括值类型、类和接口、泛型、代数数据类型和模式匹配，以及函数作为一等公民等特性支持。
+
+类和接口
+仓颉支持使用传统的类（class）和接口（interface）来实现面向对象范式编程。仓颉语言只允许单继承，每个类只能有一个父类，但可以实现多个接口。每个类都是 Object 的子类（直接子类或者间接子类）。此外，所有的仓颉类型（包括 Object）都隐式地实现 Any 接口。
+
+仓颉提供 open 修饰符，来控制一个类能不能被继承，或者一个对象成员函数能不能被子类重写（override）。
+
+在下面的例子中，类 B 继承了类 A，且同时实现了接口 I1 和 I2。为了让 A 能够被继承，它的声明需要被 open 修饰。类 A 中的函数 f 也被 open 修饰，因此可以在 B 中被重写。对函数 f 的调用会根据对象具体的类型来决定执行哪个版本，即动态派遣。
+
+open class A {
+    let x: Int = 1
+    var y: Int = 2
+
+    open func f(){
+        println("function f in A")
+    }
+
+    func g(){
+        println("function g in A")
+    }
+}
+
+
+interface I1 {
+    func h1()
+}
+
+interface I2 {
+    func h2()
+}
+
+class B <: A & I1 & I2 {
+    override func f(){
+        println("function f in B")
+    }
+
+    func h1(){
+        println("function h1 in B")
+    }
+
+    func h2(){
+        println("function h2 in B")
+    }
+}
+
+main() {
+    let o1: I1 = B()
+    let o2: A = A()
+    let o3: A = B()
+
+    o1.h1() // "function h1 in B"
+    o2.f()  // "function f in A"
+    o3.f()  // 动态派遣，"function f in B"
+    o3.g()  // "function g in A"
+}
+仓颉的 interface 之间也可以继承，并且不受单继承的约束，即一个 interface 也可以继承多个父 interface。如下示例，I3 可以同时继承 I1 和 I2。因此，若要实现 I3，需要提供对 f、g 和 h 三个函数的实现。
+
+interface I1 {
+    func f(x: Int): Unit
+}
+
+interface I2 {
+    func g(x: Int): Int
+}
+
+interface I3 <: I1 & I2 {
+    func h(): Unit
+}
+函数作为一等公民
+仓颉中函数可以作为普通表达式使用，可以作为参数传递，作为函数返回值，被保存在其他数据结构中，或者赋值给一个变量使用。
+
+func f(x: Int) {
+    return x
+}
+
+let a = f
+
+let square = {x: Int => x * x} // lambda 表达式
+
+// 函数嵌套定义，以及函数作为返回值
+func g(x: Int) {
+    func h(){
+        return f(square(x))
+    }
+    return h
+}
+
+func h(f: ()->Int) {
+    f()
+}
+
+let b = h(g(100))
+除了上面例子中的全局函数，对象或结构体等数据类型的成员函数同样也可以作为一等公民使用。下面的例子中，对象 o 的成员函数 resetX 作为普通表达式被赋值给变量 f，对 f 的调用则会改变对象 o 中成员变量 x 的值。
+
+class C{
+    var x = 100
+    func resetX(n: Int){
+        x = n
+        return x
+    }
+}
+
+main(){
+    let o = C()
+    let f = o.resetX // 成员函数作为一等公民
+    f(200)
+    print(o.x) // 200
+}
+代数数据类型和模式匹配
+代数数据类型是一种复合类型，指由其它数据类型组合而成的类型。两类常见的代数类型是积类型（如 struct、tuple 等）与和类型（如 tagged union）。
+
+在此我们着重介绍仓颉的和类型 enum，以及对应的模式匹配能力。
+
+在下面的例子中，enum 类型 BinaryTree 具有两个构造器，Node 和 Empty。其中 Empty 不带参数，对应于只有一个空节点的二叉树，而 Node 需要三个参数来构造出一个具有一个值和左右子树的二叉树。
+
+enum BinaryTree {
+    | Node(value: Int, left: BinaryTree, right: BinaryTree)
+    | Empty
+}
+访问这些 enum 实例的值需要使用模式匹配进行解析。模式匹配是一种测试表达式是否具有特定特征的方法，在仓颉中主要提供了 match 表达式来完成这个目标。对于给定的 enum 类型的表达式，我们使用 match 表达式来判断它是用哪个构造器构造的，并提取相应构造器的参数。下面的例子中，递归函数 sumBinaryTree 实现对二叉树节点中保存的整数求和。
+
+func sumBinaryTree(bt: BinaryTree) {
+    match (bt) {
+        case Node(v, l, r) =>
+            v + sumBinaryTree(l) + sumBinaryTree(r)
+        case Empty => 0
+    }
+}
+除此 enum 模式以外，仓颉也提供了其它各种模式，如常量模式、绑定模式、类型模式等，以及各种模式的嵌套使用。在下面的例子中，我们给出了对应模式的使用：
+
+常量模式：可以使用多种字面量值进行判等比较，如整数、字符串等。
+绑定模式：可以将指定位置的成员绑定到新的变量，多用于解构 enum 或 tuple。上面的 sumBinaryTree 例子中就用到了绑定模式，将 Node 节点中实际的参数与三个新声明的变量 v、l 和 r 分别绑定。
+类型模式：可以用于匹配是否目标类型，多用于向下转型。
+tuple 模式：用于比较或者解构 tuple。
+通配符模式：用于匹配任何值。
+未来仓颉还计划引入更加丰富的模式，如序列（sequence）模式、record 模式等。
+
+// 常量模式-字符串字面量
+func f1(x: String) {
+    match (x) {
+        case "abc" => ()
+        case "def" => ()
+        case _ => () // 通配符模式
+    }
+}
+
+// tuple 模式
+func f2(x: (Int, Int)) {
+    match (x) {
+        case (_, 0) => 0  // 通配符模式和常量模式
+        case (i, j) => i / j // 绑定模式，将 x 的元素绑定到 i 和 j 两个变量
+    }
+}
+
+// 类型模式
+func f3(x: ParentClass) {
+    match (x) {
+        case y: ChildClass1 => ...
+        case y: ChildClass2 => ...
+        case _ => ...
+    }
+}
+泛型
+在现代软件开发中，泛型编程已成为提高代码质量、复用性和灵活性的关键技术。泛型作为一种参数化多态技术，允许开发者在定义类型或函数时使用类型作为参数，从而创建可适用于多种数据类型的通用代码结构。泛型带来的好处包括：
+
+代码复用：能够定义可操作多种类型的通用算法和数据结构，减少代码冗余。
+类型安全：支持更多的编译时的类型检查，避免了运行时类型错误，增强了程序的稳定性。
+性能提升：由于避免了不必要的类型转换，泛型还可以提高程序执行效率。
+仓颉支持泛型编程，诸如函数、struct、class、interface、extend 都可以引入泛型变元以实现功能的泛型化。数组类型在仓颉中就是典型的泛型类型应用，其语法表示为 Array<T>，其中 T 表示了元素的类型，可以被实例化为任何一个具体的类型，例如 Array<Int> 或 Array<String>，甚至可以是嵌套数组 Array<Array<Int>>，从而可以轻易地构造各种不同元素类型的数组。
+
+除了类型外，我们还可以定义泛型函数。例如我们可以为使用泛型函数来实现任意两个同类型数组的 concat 操作。如下代码所示，我们定义了一个泛型函数 concat，并且它支持任意两个 Array<T> 类型的数组参数，经过处理后返回了一个拼接后的新数组。这样定义的 concat 函数可以应用在 Array<Int>、Array<String>、Array<Array<Int>> 以及其它任意类型的数组上，实现了功能的通用化。
+
+func concat<T>(lhs: Array<T>, rhs: Array<T>): Array<T> {
+    let defaultValue = if (lhs.size > 0) {
+        lhs[0]
+    } else if (rhs.size > 0) {
+        rhs[0]
+    } else {
+        return []
+    }
+    let newArr = Array<T>(lhs.size + rhs.size, item: defaultValue)
+    // 使用数组切片进行整段拷贝
+    newArr[0..lhs.size] = lhs
+    newArr[lhs.size..lhs.size+rhs.size] = rhs
+    return newArr
+}
+泛型和接口以及子类型结合使用，还可以让我们对泛型中的类型变元给出具体的约束，从而对可以实例化该类型变元的实际类型做出限制。下面的例子中，我们希望在数组 arr 查找元素 element。虽然我们并不关心数组及其元素的具体类型，但元素类型 T 必须能够支持判等操作，让我们能够比较数组中的元素与给定元素是否相等。因此，在 lookup 函数中的 where 子句中，我们要求 T <: Equatable<T>，即类型 T 必须实现了接口 Equatable<T>。
+
+func lookup<T>(element: T, arr: Array<T>): Bool where T <: Equatable<T> {
+    for (e in arr){
+        if (element == e){
+            return true
+        }
+    }
+    return false
+}
+仓颉的泛型类型不支持协变。以数组为例，不同元素类型的数组是完全不相同的类型，它们之间不能互相赋值，哪怕元素类型之间具有父子类型关系也是禁止的。这避免了数组协变导致的类型不安全问题。
+
+如下示例所示，Apple 是 Fruit 的子类，但是变量 a 和变量 b 之间是不能互相赋值的，Array<Fruit> 和 Array<Apple> 之间没有子类型关系。
+
+open class Fruit {}
+class Apple <: Fruit {}
+
+main() {
+    var a: Array<Fruit> = []
+    var b: Array<Apple> = []
+    a = b // 编译报错
+    b = a // 编译报错
+}

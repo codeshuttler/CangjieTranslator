@@ -1,0 +1,8 @@
+IDE 插件
+更新时间: 2024-09-06 16:33
+仓颉支持在 VSCode 底座以及 Huawei DevEco Studio 底座开发，在 VSCode 底座以及 Huawei DevEco Studio 底座安装仓颉插件后，实现开箱即用，支持以下特性：
+
+工程管理，支持创建、打开仓颉工程（在 DevEco Studio 支持创建、打开仓颉 HarmonyOS 工程）。
+代码高亮、代码补全、语法诊断、悬浮提示、定义跳转、引用查找、格式化等编码辅助能力，包括元编程相关的编码辅助能力。
+编译构建，在 HarmonyOS DevEco Studio 底座支持推送仓颉 HAP 包至手机运行能力。
+代码调试，包括断点能力、单步调试、调试信息可视化查看能力，在 Huawei DevEco Studio 底座支持仓颉 APP 手机调试能力。

@@ -12,6 +12,7 @@ from cjtrans.utils.file_utils import read_file, write_to_file
 from cjtrans.utils.md_utils import extract_code_block
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
 def main():
     parser = argparse.ArgumentParser(description="test model")
     parser.add_argument("--input", type=str, help="input path")
@@ -32,39 +33,52 @@ def main():
     elif args.lang == "python":
         source_files = list(glob.glob(os.path.join(args.input, "*/python_target.py")))
         lang_short = "py"
+    elif args.lang == "cpp":
+        source_files = list(glob.glob(os.path.join(args.input, "*/cpp_target.cpp")))
+        lang_short = "cpp"
     else:
         raise Exception("Unknown language")
     for source_target_path in tqdm.tqdm(source_files):
         dir_path = os.path.dirname(source_target_path)
-        cj_target_path =os.path.join(dir_path , "cj_target.cj")
-        source_test_path =os.path.join(dir_path , f"{lang_full}_test.{lang_short}")
-        cj_test_path =os.path.join(dir_path , "cj_test.cj")
-        
+        cj_target_path = os.path.join(dir_path, "cj_target.cj")
+        source_test_path = os.path.join(dir_path, f"{lang_full}_test.{lang_short}")
+        cj_test_path = os.path.join(dir_path, "cj_test.cj")
+
         out_dir_path = args.output
         dir_path = os.path.dirname(source_target_path).replace("\\", "/").split("/")[-1]
         out_sub_dir_path = os.path.join(out_dir_path, dir_path)
-        out_source_target_path = os.path.join(out_dir_path, dir_path, f"{lang_full}_target.{lang_short}")
+        out_source_target_path = os.path.join(
+            out_dir_path, dir_path, f"{lang_full}_target.{lang_short}"
+        )
         out_cj_target_path = os.path.join(out_dir_path, dir_path, "cj_target.cj")
-        out_source_test_path = os.path.join(out_dir_path, dir_path, f"{lang_full}_test.{lang_short}")
+        out_source_test_path = os.path.join(
+            out_dir_path, dir_path, f"{lang_full}_test.{lang_short}"
+        )
         out_cj_test_path = os.path.join(out_dir_path, dir_path, "cj_test.cj")
-        
-        out_cj_target_translation_path = os.path.join(out_dir_path, dir_path, "cj_target_translation.cj")
-        
+
+        out_cj_target_translation_path = os.path.join(
+            out_dir_path, dir_path, "cj_target_translation.cj"
+        )
+
         if not os.path.exists(out_dir_path):
             os.makedirs(out_dir_path, exist_ok=False)
-        
+
         if not os.path.exists(out_sub_dir_path):
             os.makedirs(out_sub_dir_path, exist_ok=False)
-        
-        if os.path.exists(source_target_path) and not os.path.exists(out_source_target_path):
+
+        if os.path.exists(source_target_path) and not os.path.exists(
+            out_source_target_path
+        ):
             shutil.copy(source_target_path, out_source_target_path)
         if os.path.exists(cj_target_path) and not os.path.exists(out_cj_target_path):
             shutil.copy(cj_target_path, out_cj_target_path)
-        if os.path.exists(source_test_path) and not os.path.exists(out_source_test_path):
+        if os.path.exists(source_test_path) and not os.path.exists(
+            out_source_test_path
+        ):
             shutil.copy(source_test_path, out_source_test_path)
         if os.path.exists(cj_test_path) and not os.path.exists(out_cj_test_path):
             shutil.copy(cj_test_path, out_cj_test_path)
-        
+
         if os.path.exists(out_cj_target_translation_path):
             continue
 
@@ -76,24 +90,9 @@ def main():
             extraction_output = extract_code_block(translated_code)
             if extraction_output is not None:
                 translated_code = extraction_output
-        """
-        for try_i in range(5):
-            compile_output, output = compile_and_run_cj(
-                test_case=read_file(cj_test_path),
-                target_function=translated_code,
-            )
-            compile_output = remove_color_codes(compile_output)
-            if len(compile_output.strip()) != 0:
-                translated_code = translator.correct_code(translated_code, compile_output)
-                print(translated_code)
-                if "```" in translated_code:
-                    translated_code = extract_code_block(translated_code)
-            else:
-                break
-        """
-        
+
         write_to_file(out_cj_target_translation_path, translated_code)
- 
+
 
 if __name__ == "__main__":
     main()

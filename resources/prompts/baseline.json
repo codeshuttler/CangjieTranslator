@@ -1,0 +1,12 @@
+[
+    [
+        {
+            "role": "system",
+            "content": "Cangjie is a novel programming language released by Huawei, and below are examples of translations between {{ source_language }} and {{ target_language }}."
+        },
+        {
+            "role": "user",
+            "content": "Translate {{ source_language }} to {{ target_language }}:\n{{ source_code }}"
+        }
+    ]
+]

@@ -1,0 +1,27 @@
+仓颉语言
+std.collection.concurrent 包
+更新时间: 2024-09-06 16:33
+功能介绍
+collection.concurrent 包提供了并发安全的集合类型实现。
+
+本包实现了以下几种并发安全的集合类型：
+
+ArrayBlockingQueue：以数组的形式实现的具有固定大小的有界队列。
+
+BlockingQueue：一个线程安全的队列，它支持在队列为空时阻塞获取元素的操作，以及在队列已满时阻塞添加元素的操作。
+
+ConcurrentHashMap：线程安全的哈希表实现，支持高并发的读写操作。
+
+NonBlockingQueue：一种线程安全的队列数据结构，特点是在添加元素时，如果当前的尾部Block已满，那么会创建一个新的Block，而不是阻塞等待。这样可以保证在多线程环境下，队列的操作不会因为阻塞而导致线程的阻塞，从而提高了程序的性能。
+
+API 列表
+接口
+接口名	功能
+ConcurrentMap<K, V> where K <: Equatable<K>	保证线程安全和操作原子性的 Map 接口定义。
+类
+类名	功能
+ArrayBlockingQueue<E>	基于数组实现的 Blocking Queue 数据结构及相关操作函数。
+BlockingQueue<E>	实现是带阻塞机制并支持用户指定容量上界的并发队列。
+ConcurrentHashMapIterator<K, V> where K <: Hashable & Equatable<K>	此类主要实现 Concurrent HashMap 的迭代器功能。
+ConcurrentHashMap<K, V> where K <: Hashable & Equatable<K>	此类用于实现并发场景下线程安全的哈希表 ConcurrentHashMap 数据结构及相关操作函数。
+NonBlockingQueue<E>	提供一个线程安全的队列，可以在多线程环境下安全地进行元素的添加和删除操作。
