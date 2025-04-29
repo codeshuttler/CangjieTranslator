@@ -1,24 +1,38 @@
 import glob
 import os
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from cjtrans.translate.translator import Translator
 from cjtrans.lm_inference import ModelPredictor
+from cjtrans.openai_inference import OpenaiModelPredictor
 from cjtrans.utils.file_utils import read_file
 from cjtrans.utils.md_utils import extract_code_block
 
-MODEL_NAME = "Qwen/Qwen2.5-72B-Instruct-GPTQ-Int4"
-device = "cuda:0"  # the device to load the model onto
+# MODEL_NAME = "Qwen/Qwen2.5-72B-Instruct-GPTQ-Int4"
+# device = "cuda:0"  # the device to load the model onto
 translator = None
 
 
 def ai_fix_cj(
-    cj_code: str, compiler_outputs: List[Tuple[str, str, str, str, str]], doc_path=None
+    cj_code: str,
+    compiler_outputs: List[Tuple[str, str, str, str, str]],
+    doc_path=None,
+    model_name: Optional[str] = None,
+    base_url: Optional[str] = None,
+    api_key: Optional[str] = None,
 ) -> Tuple[str, Dict[str, str]]:
     global translator
+    if model_name is None:
+        raise ValueError("model_name must be provided")
+    if base_url is None:
+        raise ValueError("base_url must be provided")
+    if api_key is None:
+        raise ValueError("api_key must be provided")
     if translator is None:
-        engine = ModelPredictor(MODEL_NAME, use_vllm=True, device=device, enforce_eager=True)
+        engine = OpenaiModelPredictor(
+            model_name, api_key=api_key, base_url=base_url
+        )
         translator = Translator(engine)
     lines = cj_code.splitlines()
     # Unique outputs
@@ -52,10 +66,14 @@ def ai_fix_cj(
     doc = None
     doc_selected = None
     if doc_path is not None:
+        # get keyword from doc title
         cj_docs = glob.glob(os.path.join(doc_path, "**", "*.txt"), recursive=True)
-        cj_docs = filter(lambda x: not x.startswith('2_'), list(cj_docs))
+        cj_docs = filter(lambda x: not x.startswith("2_"), list(cj_docs))
+        
         # print(list(cj_docs))
-        model_out = translator.index_document(list(cj_docs), error_msg + "\n" + error_details)
+        model_out = translator.index_document(
+            list(cj_docs), error_msg + "\n" + error_details
+        )
         match = re.search(r"```(.*)```", model_out)
         if match:
             doc_selected = match.group(1)
