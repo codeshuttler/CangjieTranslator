@@ -17,6 +17,12 @@ Java代码到仓颉代码的翻译由两位经验丰富的开发者完成，二�
 
 测试数据集托管于`Releases`目录下：[TransCoderTestCJ](https://github.com/codeshuttler/CangjieTranslator/releases/download/artifacts/results.7z)。
 
+Cangjie的文档数据位于`Resource/cangjie_documents`目录下：[cangjie_documents](https://github.com/codeshuttler/CangjieTranslator/tree/main/resources/cangjie_documents)。
+
+Prompt Pool 模板位于`Resource/prompts`目录下：[prompts](https://github.com/codeshuttler/CangjieTranslator/tree/main/resources/prompts)。
+
+Instruction Fine-tuning模板位于`Resource/sft_prompts`目录下：[sft_prompts](https://github.com/codeshuttler/CangjieTranslator/tree/main/resources/sft_prompts)。
+
 # 环境配置
 
 ## 硬件要求

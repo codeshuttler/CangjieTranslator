@@ -14,7 +14,14 @@ The artifact contains three parts:
 # Data
 We manually constructed the test dataset. Our test data is derived from TransCoder's Java code, consisting of a total of 216 test samples, which include test inputs and functions to be tested.
 We manually translated the Java code into Cangjie code, with two experienced developers involved in the translation process. Both developers have over three years of Java  development experience and three months of Cangjie language development experience. It took us two weeks to complete the construction of this dataset.
+
 The test dataset is under the repository `Releases` - [TransCoderTestCJ](https://github.com/codeshuttler/CangjieTranslator/releases/download/artifacts/results.7z).
+
+The Cangjie document data is located in the `Resource/cangjie_documents` directory: [cangjie_documents](https://github.com/codeshuttler/CangjieTranslator/tree/main/resources/cangjie_documents).  
+
+The Prompt Pool templates are located in the `Resource/prompts` directory: [prompts](https://github.com/codeshuttler/CangjieTranslator/tree/main/resources/prompts).  
+
+The Instruction Fine-tuning templates are located in the `Resource/sft_prompts` directory: [sft_prompts](https://github.com/codeshuttler/CangjieTranslator/tree/main/resources/sft_prompts).
 
 # Setup
 ## Hardware
